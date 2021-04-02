@@ -11,15 +11,18 @@ app = Flask("diagnoob")
 
 def preprocess(input):
     # create the tokenizer
-    t = pickle.load('./model/001-tokenizer.pickle')
+    f = open('./model/001-tokenizer.pickle', 'rb+')
+    t = pickle.load(f)
 
     # Pad the input vectors to ensure a consistent length
     x_input = np.array(t.texts_to_sequences(input))
     return pad_sequences(x_input, maxlen=500)
 
 def postprocess(output):
+    f = open('./model/001-labelencoder.pickle', 'rb+')
+    enc = pickle.load(f)
+
     output_classes = np.argmax(output, axis=None, out=None)
-    enc = pickle.load('./model/001-labelencoder.pickle')
     return enc.inverse_transform(output_classes)
 
 
