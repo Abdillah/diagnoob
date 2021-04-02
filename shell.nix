@@ -1,9 +1,9 @@
 { pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
-  buildInputs = pkgs; [
+  buildInputs = with pkgs; [
     python37Packages.pip
-    python37Packages.tensorflow
+    python37Packages.tensorflow-bin_2
     python37Packages.Keras
     python37Packages.flask
 
