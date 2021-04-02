@@ -28,6 +28,14 @@ def postprocess(output):
 def keyword_extract():
     return render_template('predict.html')
 
+
+@app.route('/keyword-extract/result', methods = ['POST', 'GET'])
+def keyword_extract_result():
+    if request.method == 'POST':
+        result = request.form
+        return render_template('result.html', result = str(result))
+
+
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
