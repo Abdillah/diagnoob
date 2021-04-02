@@ -1,4 +1,8 @@
 Flask==1.1.2
+Flask-Bootstrap==3.3.7.1
+scikit-learn==0.24.1
 numpy
 tensorflow
 keras
+dill
+nltk==3.5

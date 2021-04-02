@@ -4,6 +4,7 @@ import re
 from flask import Flask
 from flask import jsonify, request
 from flask import render_template
+from flask_bootstrap import Bootstrap
 
 from tensorflow import keras
 from keras.preprocessing.text import Tokenizer
@@ -16,6 +17,10 @@ from nltk.corpus import stopwords
 
 nltk.download('stopwords')
 app = Flask("diagnoob")
+Bootstrap(app)
+
+
+model = joblib.load('./model/002.pkl')
 
 def decontracted(phrase):   # text pre-processing 
     # specific
@@ -69,7 +74,7 @@ def postprocess(output):
     return decoded[output_class]
 
 
-@app.route('/keyword-extract/')
+@app.route('/keyword-extract/', methods = ['POST', 'GET'])
 def keyword_extract():
     return render_template('predict.html')
 
@@ -77,9 +82,11 @@ def keyword_extract():
 @app.route('/keyword-extract/result', methods = ['POST', 'GET'])
 def keyword_extract_result():
     if request.method == 'POST':
-        result = request.form
-        return render_template('result.html', result = str(result))
+        request_trans = request.form['transcription']
+        return render_template('result.html', result = set(predict(request_trans)[0].split(' ')))
 
+def predict(input_sentence):
+    return model.predict([input_sentence])
 
 @app.route('/')
 def hello_world():

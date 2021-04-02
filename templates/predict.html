@@ -1,11 +1,18 @@
-{% block header %}
-  <h1>{% block title %}Predict{% endblock %}</h1>
-{% endblock %}
+{% extends "layout/base.html" %}
+{% block title %}Predict{% endblock %}
 
 {% block content %}
-  <form action = "http://localhost:5000/keyword-extract/result" method="post">
-    <label for="transcription">Transcription</label>
-    <input name="transcription" id="transcription" required>
-    <input type="submit" value="Predict">
-  </form>
+  <div class="container">
+    <form action = "http://localhost:5000/keyword-extract/result" method="post">
+      <div class="form-group">
+        <label for="exampleInputEmail1">Transcription</label>
+        <input type="transcription" class="form-control" name="transcription" id="transcription" aria-describedby="transcriptionHelp" placeholder="Enter transcription">
+      </div>
+      <button type="submit" class="btn btn-primary">Predict</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block footer %}
+  {% include "include/footer.html" %}
 {% endblock %}
