@@ -9,6 +9,7 @@ from tensorflow import keras
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
+import joblib
 
 import nltk
 from nltk.corpus import stopwords
@@ -93,3 +94,12 @@ def diagnose():
     output = model.predict(preprocessed_input)
     output = postprocess(output)
     return jsonify(data=output)
+
+@app.route('/api/diagnose/v2/', methods = [ "GET" ])
+def diagnose_v2():
+    model = joblib.load('./model/002.pkl')
+    input_sentence = request.args.get('sentence')
+    print('input_sentence', input_sentence)
+    output = model.predict([input_sentence])
+    # output = postprocess(output)
+    return jsonify(data=output[0])
