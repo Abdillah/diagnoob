@@ -7,6 +7,7 @@ from flask import render_template
 from tensorflow import keras
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+import numpy as np
 
 app = Flask("diagnoob")
 
@@ -40,11 +41,11 @@ def keyword_extract_result():
 def hello_world():
     return 'Hello, World!'
 
-@app.route('/api/diagnose/')
+@app.route('/api/diagnose/', methods = [ "GET" ])
 def diagnose():
     model = keras.models.load_model('./model/001.hdf5')
-    input_sentence = request.form['sentence']
+    input_sentence = request.args.get('sentence')
     preprocessed_input = preprocess(input_sentence)
     output = model.predict(preprocessed_input)
-    output = postprocess(output)
-    return jsonify(data=output)
+    # output = postprocess(output)
+    return jsonify(data=output.tolist())
