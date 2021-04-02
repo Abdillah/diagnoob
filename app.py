@@ -1,4 +1,5 @@
 import pickle
+import re
 
 from flask import Flask
 from flask import jsonify, request
@@ -9,14 +10,51 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 
+import nltk
+from nltk.corpus import stopwords
+
+nltk.download('stopwords')
 app = Flask("diagnoob")
 
+def decontracted(phrase):   # text pre-processing 
+    # specific
+    phrase = re.sub(r"won't", "will not", phrase)
+    phrase = re.sub(r"can\'t", "can not", phrase)
+    phrase = re.sub(r"@", "" , phrase)         # removal of @
+    phrase =  re.sub(r"http\S+", "", phrase)   # removal of URLs
+    phrase = re.sub(r"#", "", phrase)          # hashtag processing
+
+    # general
+    phrase = re.sub(r"n\'t", " not", phrase)
+    phrase = re.sub(r"\'re", " are", phrase)
+    phrase = re.sub(r"\'s", " is", phrase)
+    phrase = re.sub(r"\'d", " would", phrase)
+    phrase = re.sub(r"\'ll", " will", phrase)
+    phrase = re.sub(r"\'t", " not", phrase)
+    phrase = re.sub(r"\'ve", " have", phrase)
+    phrase = re.sub(r"\'m", " am", phrase)
+    return phrase
+
 def preprocess(input):
+    input = str(input)
+
+    print('input', input)
+    
+    input = decontracted(input)
+    input = re.sub("\S*\d\S*", "", input).strip()
+    input = re.sub('[^A-Za-z]+', ' ', input)
+    # https://gist.github.com/sebleier/554280
+    input = ' '.join(list(e.lower() for e in input.split() if e.lower() not in stopwords.words()))
+    input = input.strip()
+
     # create the tokenizer
-    t = pickle.load('./model/001-tokenizer.pickle')
+    f = open('./model/001-tokenizer.pickle', 'rb+')
+    t = pickle.load(f)
 
     # Pad the input vectors to ensure a consistent length
+    print('input', input)
     x_input = np.array(t.texts_to_sequences(input))
+    print('x_input', x_input)
     return pad_sequences(x_input, maxlen=500)
 
 def postprocess(output):
@@ -50,6 +88,7 @@ def hello_world():
 def diagnose():
     model = keras.models.load_model('./model/001.hdf5')
     input_sentence = request.args.get('sentence')
+    print('input_sentence', input_sentence)
     preprocessed_input = preprocess(input_sentence)
     output = model.predict(preprocessed_input)
     output = postprocess(output)
