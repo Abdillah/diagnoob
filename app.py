@@ -20,9 +20,14 @@ def preprocess(input):
     return pad_sequences(x_input, maxlen=500)
 
 def postprocess(output):
-    output_classes = np.argmax(output, axis=None, out=None)
-    enc = pickle.load('./model/001-labelencoder.pickle')
-    return enc.inverse_transform(output_classes)
+    f = open('./model/001-labelencoder.pickle', 'rb+')
+    enc = pickle.load(f)
+
+    output = output.flatten()
+    output_class = np.argmax(output, axis=None, out=None)
+    output = [ 1 if k == output_class else 0 for (k, o) in enumerate(output) ]
+    decoded = enc.inverse_transform(output)
+    return decoded[output_class]
 
 
 @app.route('/keyword-extract/')
@@ -47,5 +52,5 @@ def diagnose():
     input_sentence = request.args.get('sentence')
     preprocessed_input = preprocess(input_sentence)
     output = model.predict(preprocessed_input)
-    # output = postprocess(output)
-    return jsonify(data=output.tolist())
+    output = postprocess(output)
+    return jsonify(data=output)
