@@ -90,7 +90,7 @@ def predict(input_sentence):
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return 'Hello, Diagno User!'
 
 @app.route('/api/diagnose/', methods = [ "GET" ])
 def diagnose():
