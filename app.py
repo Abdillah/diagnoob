@@ -1,15 +1,19 @@
 import pickle
 import re
+import csv
 
 from flask import Flask
 from flask import jsonify, request
 from flask import render_template
 from flask_bootstrap import Bootstrap
+from werkzeug.wrappers import Response
 
 from tensorflow import keras
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
+import pandas as pd
+from io import StringIO
 import joblib
 
 import nltk
@@ -40,6 +44,16 @@ def decontracted(phrase):   # text pre-processing
     phrase = re.sub(r"\'ve", " have", phrase)
     phrase = re.sub(r"\'m", " am", phrase)
     return phrase
+
+
+def clean(input):
+    input = str(input)
+    
+    input = decontracted(input)
+    input = re.sub("\S*\d\S*", "", input).strip()
+    input = re.sub('[^A-Za-z]+', ' ', input)
+
+    return input
 
 def preprocess(input):
     input = str(input)
@@ -83,7 +97,44 @@ def keyword_extract():
 def keyword_extract_result():
     if request.method == 'POST':
         request_trans = request.form['transcription']
-        return render_template('result.html', result = set(predict(request_trans)[0].split(' ')))
+        result = {
+            "trans": request_trans,
+            "keywords": list(set(predict(request_trans)[0].split(' ')))
+        }
+        return render_template('result.html', result=result)
+
+
+@app.route('/keyword-extract/save', methods = ['POST', 'GET'])
+def keyword_extract_save():
+    if request.method == 'POST':
+        keys = '-'.join(request.form.getlist('keywords'))
+
+        data_trans = clean(request.form['trans'])
+
+        def generate():
+            data = StringIO()
+            w = csv.writer(data)
+
+            # write header
+            w.writerow(('Transcription', 'Keywords'))
+            yield data.getvalue()
+            data.seek(0)
+            data.truncate(0)
+
+            w.writerow((
+                data_trans,
+                keys
+            ))
+            yield data.getvalue()
+            data.seek(0)
+            data.truncate(0)
+
+        # stream the response as the data is generated
+        response = Response(generate(), mimetype='text/csv')
+        # add a filename
+        response.headers.set("Content-Disposition", "attachment", filename="diagno_dataset.csv")
+        return response
+
 
 def predict(input_sentence):
     return model.predict([input_sentence])

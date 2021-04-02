@@ -3,12 +3,17 @@
 
 {% block content %}
   <div class="container">
-    <form action = "http://localhost:5000/keyword-extract/" method="post">
+    <form action = "http://localhost:5000/keyword-extract/save" method="post">
       <div class="form-group">
-        <label for="exampleInputEmail1">Hasil Prediksi: </label>
-        <h4 style="color:rgb(2, 55, 116);">{{ result }} <h4>
-    </div>
-      <button type="submit" class="btn btn-primary">Extract Again</button>
+        <label for="exampleHasilPrediksi">Hasil Ekstraksi: </label>
+        <input type="hidden" id="trans" name="trans" value="{{ result.trans }}">
+        {% for item in result.keywords %}
+          <div class="checkbox">
+            <label><input type="checkbox" name="keywords" value={{ item }}>{{ item }}</label>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn btn-primary">Save to CSV</button>
     </form>
   </div>
 {% endblock %}
