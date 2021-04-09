@@ -10,6 +10,7 @@ from flask import render_template
 from flask_bootstrap import Bootstrap
 from werkzeug.wrappers import Response
 from wordcloud import WordCloud, STOPWORDS
+import matplotlib
 import matplotlib.pyplot as plt
 
 
@@ -30,8 +31,7 @@ Bootstrap(app)
 
 
 app.config['UPLOADED_PHOTOS_DEST'] = 'static/images'
-
-
+matplotlib.use('Agg')
 model = joblib.load('./model/002.pkl')
 
 
@@ -194,4 +194,4 @@ def form_vals():
 
     plt.savefig(os.path.join(app.config['UPLOADED_PHOTOS_DEST'], 'wcloud.png')) #save to the images directory
 
-    return jsonify({"result": "<img src='static/images/wcloud.png' width='120' height='90' />"})
+    return jsonify({"result": "success"})
