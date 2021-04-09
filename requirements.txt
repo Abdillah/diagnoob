@@ -6,4 +6,6 @@ pandas
 tensorflow
 keras
 dill
+matplotlib
+wordcloud
 nltk==3.5

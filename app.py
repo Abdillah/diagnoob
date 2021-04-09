@@ -1,12 +1,17 @@
 import pickle
 import re
 import csv
+import uuid
+import os
 
 from flask import Flask
 from flask import jsonify, request
 from flask import render_template
 from flask_bootstrap import Bootstrap
 from werkzeug.wrappers import Response
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.pyplot as plt
+
 
 from tensorflow import keras
 from keras.preprocessing.text import Tokenizer
@@ -24,7 +29,11 @@ app = Flask("diagnoob")
 Bootstrap(app)
 
 
+app.config['UPLOADED_PHOTOS_DEST'] = 'static/images'
+
+
 model = joblib.load('./model/002.pkl')
+
 
 def decontracted(phrase):   # text pre-processing 
     # specific
@@ -55,6 +64,7 @@ def clean(input):
 
     return input
 
+
 def preprocess(input):
     input = str(input)
 
@@ -76,6 +86,7 @@ def preprocess(input):
     x_input = np.array(t.texts_to_sequences(input))
     print('x_input', x_input)
     return pad_sequences(x_input, maxlen=500)
+
 
 def postprocess(output):
     f = open('./model/001-labelencoder.pickle', 'rb+')
@@ -139,9 +150,11 @@ def keyword_extract_save():
 def predict(input_sentence):
     return model.predict([input_sentence])
 
+
 @app.route('/')
 def hello_world():
     return render_template('index.html')
+
 
 @app.route('/api/diagnose/', methods = [ "GET" ])
 def diagnose():
@@ -153,6 +166,7 @@ def diagnose():
     output = postprocess(output)
     return jsonify(data=output)
 
+
 @app.route('/api/diagnose/v2/', methods = [ "GET" ])
 def diagnose_v2():
     model = joblib.load('./model/002.pkl')
@@ -161,3 +175,23 @@ def diagnose_v2():
     output = model.predict([input_sentence])
     # output = postprocess(output)
     return jsonify(data=output[0])
+
+
+@app.route('/get_word_cloud')
+def form_vals():
+    trans = request.args.get('trans')
+    stopwords = set(STOPWORDS)
+    wordcloud = WordCloud(width=800, height=800,
+                        background_color='white',
+                        stopwords=stopwords,
+                        min_font_size=10).generate(trans)
+
+    # plot the WordCloud image
+    # plt.figure(figsize=(8, 8), facecolor=None)
+    plt.imshow(wordcloud)
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+
+    plt.savefig(os.path.join(app.config['UPLOADED_PHOTOS_DEST'], 'wcloud.png')) #save to the images directory
+
+    return jsonify({"result": "<img src='static/images/wcloud.png' width='120' height='90' />"})

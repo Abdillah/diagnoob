@@ -15,8 +15,34 @@
       </div>
       <button type="submit" class="btn btn-primary">Save to CSV</button>
     </form>
+ <button type='button' class='get_result'>Word Cloud</button>
+      <div id='image_location'></div>
   </div>
+
+     <script>
+       $(document).ready(function() {
+          console.log('Horeee');
+          $('.get_result').click(function(){
+             var trans = $('#trans').val();
+             //get the rest of the vals
+             $.ajax({
+              url: "/get_word_cloud",
+              type: "get",
+              data: {trans: trans},
+              success: function(response) {
+              console.log(response);
+               $("#image_location").html('<img src="{{url_for('static', filename='images/wcloud.png')}}" width="500" height="400" />');
+              },
+              error: function(xhr) {
+                //Do Something to handle error
+              }
+          });
+         });
+       });
+    </script>
 {% endblock %}
+
+
 
 {% block footer %}
   {% include "include/footer.html" %}
